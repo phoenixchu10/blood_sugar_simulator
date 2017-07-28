@@ -50,15 +50,7 @@ class Simulator
         effective_food_records.map { |record| record.obj.effective_rate }.inject(0, :+) +
         effective_exercise_records.map { |record| record.obj.effective_rate }.inject(0, :+)
 
-      if normalized? number
-        if blood_sugar_records[number - 1] > DEFAULT_BLOOD_SUGAR
-          blood_sugar_records[number] = blood_sugar_records[number - 1] - 1
-        elsif blood_sugar_records[number - 1] < DEFAULT_BLOOD_SUGAR
-          blood_sugar_records[number] = blood_sugar_records[number - 1] + 1
-        else
-          blood_sugar_records[number]
-        end
-      end
+      normalize number if normalized? number
 
       if blood_sugar_records[number] > GLYCATION_LIMIT
         glycation[number] = 1
@@ -81,6 +73,15 @@ class Simulator
   end
 
   private
+  def normalize(number)
+    if blood_sugar_records[number - 1] > DEFAULT_BLOOD_SUGAR
+      blood_sugar_records[number] = blood_sugar_records[number - 1] - 1
+    elsif blood_sugar_records[number - 1] < DEFAULT_BLOOD_SUGAR
+      blood_sugar_records[number] = blood_sugar_records[number - 1] + 1
+    else
+      blood_sugar_records[number]
+    end
+  end
 
   def in_food_effect?(record_number)
     foods.any? do |record|
