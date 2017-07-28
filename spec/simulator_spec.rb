@@ -66,6 +66,26 @@ describe Simulator do
     end
   end
 
+  describe '#reset' do
+    let(:start_at) { 145 }
+    let(:end_at) { 200 }
+
+    subject { simulator.reset(start_at, end_at) }
+
+    before { simulator.add_food '2:20' => food }
+
+    it 'should be able to reset certain period time to default value' do
+      expect(simulator.blood_suguar_at("2:30")).to_not eq Simulator::DEFAULT_BLOOD_SUGAR
+
+      subject
+
+      expect(simulator.blood_suguar_at("2:30")).to eq Simulator::DEFAULT_BLOOD_SUGAR
+      expect(simulator.blood_suguar_at("3:10")).to eq Simulator::DEFAULT_BLOOD_SUGAR
+      expect(simulator.blood_suguar_at("4:20")).to_not eq Simulator::DEFAULT_BLOOD_SUGAR
+      expect(simulator.blood_suguar_records.size).to eq(Simulator::MAX_RECORD_NUMBER + 1)
+    end
+  end
+
   it 'should be able to add exercise' do
   end
 

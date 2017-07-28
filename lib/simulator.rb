@@ -8,13 +8,14 @@ class Simulator
   attr_reader :blood_suguar_records, :glycation, :foods, :exercises
 
   def initialize
-    reset
     @foods = []
     @exercises = []
+    reset
   end
 
-  def reset
-    @blood_suguar_records = Array.new(MAX_RECORD_NUMBER + 1, DEFAULT_BLOOD_SUGAR)
+  def reset(start_at = 0, end_at = MAX_RECORD_NUMBER)
+    @blood_suguar_records = Array.new(MAX_RECORD_NUMBER + 1, DEFAULT_BLOOD_SUGAR) if start_at == 0 and end_at == MAX_RECORD_NUMBER
+    @blood_suguar_records[start_at..end_at] = Array.new(end_at - start_at + 1, DEFAULT_BLOOD_SUGAR)
     @glycation = {}
   end
 
@@ -22,7 +23,7 @@ class Simulator
     record_number = time_to_record_number(record.keys.first)
     food = record.values.first
     foods << { record_number => food }
-    reset
+    reset(record_number, record_number + Food::DURATION + food.glycemic_index)
     calculate_blood_suguar(record_number, record_number + Food::DURATION + food.glycemic_index)
   end
 
