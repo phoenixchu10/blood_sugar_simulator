@@ -18,7 +18,7 @@ simulator.add_food('13:00' => Food.find(2))
 simulator.add_food('14:30' => Food.find(1))
 simulator.add_exercise('15:30' => Exercise.find(1))
 
-puts "Whole day blood suguar simulation:"
+puts "Whole day blood sugar simulation:"
 puts simulator.print_result
 puts "----------------------------------"
 puts "Glycation: #{simulator.total_glycation} minutes"
