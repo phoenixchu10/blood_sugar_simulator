@@ -11,7 +11,7 @@ class Food < Struct.new(:id, :name, :glycemic_index)
   def self.load(file_path = DEFAULT_FILE_PATH)
     super do |row|
       csv_values = row.to_h
-      @all << new(csv_values['ID'], csv_values['Name'], csv_values['Glycemic Index'])
+      @all << new(csv_values['ID'], csv_values['Name'], csv_values['Glycemic Index'].to_f)
     end
   end
 end

@@ -10,7 +10,7 @@ module ValueObjectMethods
   end
 
   def effective_rate
-    glycemic_index.to_f / self.class::DURATION
+    glycemic_index / self.class::DURATION
   end
 
   class_methods do

@@ -2,7 +2,6 @@ require 'active_support/all'
 
 class Simulator
   DEFAULT_BLOOD_SUGAR = 80
-  EXERCISE_DURATION = 60
   MAX_RECORD_NUMBER = 24.hours / 60
 
   attr_reader :blood_suguar_records, :glycation, :foods, :exercises
@@ -23,8 +22,16 @@ class Simulator
     record_number = time_to_record_number(record.keys.first)
     food = record.values.first
     foods << { record_number => food }
-    reset(record_number, record_number + Food::DURATION + food.glycemic_index)
-    calculate_blood_suguar(record_number, record_number + Food::DURATION + food.glycemic_index)
+    reset record_number
+    calculate_blood_suguar record_number
+  end
+
+  def add_exercise(record)
+    record_number = time_to_record_number(record.keys.first)
+    exercise = record.values.first
+    exercises << { record_number => exercise }
+    reset record_number
+    calculate_blood_suguar record_number
   end
 
   def calculate_blood_suguar(start_at = 0,  end_at = MAX_RECORD_NUMBER)
@@ -40,21 +47,12 @@ class Simulator
         next
       end
 
-      if in_food_effect? number
-        effective_food_records = foods.select { |food_record| food_record.keys.first - Food::DURATION < number }
-        blood_suguar_records[number] += effective_food_records.inject(0) do |sum, food_record|
-          effect_duration = (duration = number - food_record.keys.first) > Food::DURATION ? Food::DURATION : duration
-          sum += effect_duration * food_record.values.first.effective_rate
-        end
-      end
+      effective_food_records = foods.select { |food_record| number - food_record.keys.first < Food::DURATION }
+      effective_exercise_records = exercises.select { |exercise_record| number - exercise_record.keys.first < Exercise::DURATION }
 
-      if in_exercise_effect? number
-        effective_exercise_records = exercises.select { |exercise_record| exercise_record.keys.first - EXERCISE_DURATION < number }
-        blood_suguar_records[number] += effective_exercise_records.inject(0) do |sum, exercise_record|
-          effect_duration = (duration = number - exercise_record.keys.first) > Exercise::DURATION ? Exercise::DURATION : duration
-          sum += (number - exercise_record.keys.first) * exercise_record.values.first.effective_rate
-        end
-      end
+      blood_suguar_records[number] = blood_suguar_records[number - 1] +
+        effective_food_records.map { |food_record| food_record.values.first.effective_rate }.inject(0, :+) +
+        effective_exercise_records.map { |exercise_record| exercise_record.values.first.effective_rate }.inject(0, :+)
 
       if normalized? number
         if blood_suguar_records[number - 1] > DEFAULT_BLOOD_SUGAR
@@ -95,7 +93,7 @@ class Simulator
   def in_exercise_effect?(record_number)
     exercises.any? do |exercise_record|
       start_at = exercise_record.keys.first
-      record_number > start_at && record_number <= start_at + EXERCISE_DURATION
+      record_number > start_at && record_number <= start_at + Exercise::DURATION
     end
   end
 
@@ -104,10 +102,10 @@ class Simulator
   end
 
   def food_effect_rate(food_records)
-    food_records.map { |food_record| food_record.values.first.glycemic_index }.inject(0, :+).to_f / Food::DURATION
+    food_records.map { |food_record| food_record.values.first.glycemic_index }.inject(0, :+) / Food::DURATION
   end
 
   def exercise_effect_rate(exercise_records)
-    exercise_records.map { |exercise_record| exercise_record.values.first.glycemic_index }.inject(0, :+).to_f / EXERCISE_DURATION
+    exercise_records.map { |exercise_record| exercise_record.values.first.glycemic_index }.inject(0, :+) / Exercise::DURATION
   end
 end
