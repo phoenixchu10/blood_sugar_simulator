@@ -1,4 +1,6 @@
 require 'csv'
+require 'active_support/all'
+require File.join File.expand_path(File.dirname(__FILE__)), '..', 'lib', 'concerns', 'record_methods'
 require File.join File.expand_path(File.dirname(__FILE__)), '..', 'lib', 'food'
 require File.join File.expand_path(File.dirname(__FILE__)), '..', 'lib', 'exercise'
 require File.join File.expand_path(File.dirname(__FILE__)), '..', 'lib', 'simulator'

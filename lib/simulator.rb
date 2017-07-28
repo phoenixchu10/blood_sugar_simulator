@@ -1,8 +1,3 @@
-require 'active_support/all'
-require 'food'
-require 'exercise'
-require 'record'
-
 class Simulator
   DEFAULT_BLOOD_SUGAR = 80
   MAX_RECORD_NUMBER = 24.hours / 60
@@ -81,7 +76,7 @@ class Simulator
 
   def print_result
     blood_suguar_records.map.with_index do |value, index|
-      { "#{index/60}:#{index%60}" => value }
+      { "#{(index / 60).to_s.rjust(2, '0')}:#{(index % 60).to_s.rjust(2, '0')}" => value }
     end
   end
 

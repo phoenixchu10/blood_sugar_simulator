@@ -1,8 +1,5 @@
-require 'active_support/all'
-require 'concerns/value_object_methods'
-
 class Food < Struct.new(:id, :name, :glycemic_index)
-  include ValueObjectMethods
+  include RecordMethods
 
   DURATION = 60 * 2
 

@@ -113,7 +113,7 @@ describe Simulator do
     before { simulator.add_food '2:20' => food }
 
     it 'should be able to print result' do
-      expect(subject[200]).to eq({ '3:20' => 103.89166666666661 })
+      expect(subject[200]).to eq({ '03:20' => 103.89166666666661 })
     end
   end
 

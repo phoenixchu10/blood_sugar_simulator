@@ -1,6 +1,6 @@
 require 'active_support/all'
 
-module ValueObjectMethods
+module RecordMethods
   extend ActiveSupport::Concern
 
   included do
