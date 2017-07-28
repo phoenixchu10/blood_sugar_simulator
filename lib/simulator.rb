@@ -1,4 +1,7 @@
 require 'active_support/all'
+require 'food'
+require 'exercise'
+require 'record'
 
 class Simulator
   DEFAULT_BLOOD_SUGAR = 80
@@ -23,25 +26,18 @@ class Simulator
     @glycation[start_at..end_at] = Array.new(end_at - start_at + 1, 0)
   end
 
-  def add_food(record)
-    record_number = time_to_record_number(record.keys.first)
-    food = record.values.first
-    foods << { record_number => food }
-    reset record_number
-    calculate_blood_suguar record_number
-  end
-
-  def add_exercise(record)
-    record_number = time_to_record_number(record.keys.first)
-    exercise = record.values.first
-    exercises << { record_number => exercise }
-    reset record_number
-    calculate_blood_suguar record_number
+  ['food' , 'exercise'].each do |category|
+    define_method "add_#{category}" do |record|
+      record = Record.new record
+      instance_variable_get(:"@#{category.pluralize}") << record
+      reset record.number
+      calculate_blood_suguar record.number
+    end
   end
 
   def calculate_blood_suguar(start_at = 0,  end_at = MAX_RECORD_NUMBER)
-    foods.sort! { |food_record| food_record.keys.first }
-    exercises.sort! { |exercise_record| exercise_record.keys.first }
+    foods.sort! { |food_record| food_record.number }
+    exercises.sort! { |exercise_record| exercise_record.number }
 
     start_at = 0 if start_at < 0
     end_at = MAX_RECORD_NUMBER if end_at > MAX_RECORD_NUMBER
@@ -52,12 +48,12 @@ class Simulator
         next
       end
 
-      effective_food_records = foods.select { |food_record| number - food_record.keys.first < Food::DURATION }
-      effective_exercise_records = exercises.select { |exercise_record| number - exercise_record.keys.first < Exercise::DURATION }
+      effective_food_records = foods.select { |record| number - record.number < Food::DURATION }
+      effective_exercise_records = exercises.select { |record| number - record.number < Exercise::DURATION }
 
       blood_suguar_records[number] = blood_suguar_records[number - 1] +
-        effective_food_records.map { |food_record| food_record.values.first.effective_rate }.inject(0, :+) +
-        effective_exercise_records.map { |exercise_record| exercise_record.values.first.effective_rate }.inject(0, :+)
+        effective_food_records.map { |record| record.obj.effective_rate }.inject(0, :+) +
+        effective_exercise_records.map { |record| record.obj.effective_rate }.inject(0, :+)
 
       if normalized? number
         if blood_suguar_records[number - 1] > DEFAULT_BLOOD_SUGAR
@@ -76,7 +72,7 @@ class Simulator
   end
 
   def blood_suguar_at(time)
-    blood_suguar_records[time_to_record_number(time)]
+    blood_suguar_records[Record.time_to_record_number(time)]
   end
 
   def total_glycation
@@ -91,27 +87,16 @@ class Simulator
 
   private
 
-  def time_to_record_number(time)
-    raise ArgumentError, "Invalid time #{time}" unless time.include? ':'
-
-    hour, minute = time.split(':').map(&:to_i)
-
-    raise ArgumentError, "Invalid hour #{hour}" unless hour >= 0  && hour <= 24
-    raise ArgumentError, "Invalid minute #{minute}" unless minute >= 0  && minute <= 60
-
-    (hour.hours / 60 + minute).to_i
-  end
-
   def in_food_effect?(record_number)
-    foods.any? do |food_record|
-      start_at = food_record.keys.first
+    foods.any? do |record|
+      start_at = record.number
       record_number > start_at && record_number <= start_at + Food::DURATION
     end
   end
 
   def in_exercise_effect?(record_number)
-    exercises.any? do |exercise_record|
-      start_at = exercise_record.keys.first
+    exercises.any? do |record|
+      start_at = record.number
       record_number > start_at && record_number <= start_at + Exercise::DURATION
     end
   end
@@ -121,10 +106,10 @@ class Simulator
   end
 
   def food_effect_rate(food_records)
-    food_records.map { |food_record| food_record.values.first.glycemic_index }.inject(0, :+) / Food::DURATION
+    food_records.map { |record| record.obj.glycemic_index }.inject(0, :+) / Food::DURATION
   end
 
-  def exercise_effect_rate(exercise_records)
-    exercise_records.map { |exercise_record| exercise_record.values.first.glycemic_index }.inject(0, :+) / Exercise::DURATION
+  def exercise_effect_rate(records)
+    exercise_records.map { |record| record.obj.glycemic_index }.inject(0, :+) / Exercise::DURATION
   end
 end

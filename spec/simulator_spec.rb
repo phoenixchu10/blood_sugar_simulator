@@ -24,7 +24,7 @@ describe Simulator do
 
     it 'should be able to add food and calculate blood suguar correctly' do
       subject
-      expect(simulator.foods).to eq [(12 * 60 + 30) => food]
+      expect(simulator.foods).to eq [Record.new('12:30' => food)]
       expect(simulator.blood_suguar_at('12:30')).to be_within(1).of Simulator::DEFAULT_BLOOD_SUGAR
       expect(simulator.blood_suguar_at('13:00')).to be_within(1).of Simulator::DEFAULT_BLOOD_SUGAR + food.glycemic_index / 4
       expect(simulator.blood_suguar_at('13:30')).to be_within(1).of Simulator::DEFAULT_BLOOD_SUGAR + food.glycemic_index / 2
