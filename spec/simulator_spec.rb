@@ -14,7 +14,7 @@ describe Simulator do
     it 'should keep default value' do
       subject
       expect(subject.blood_suguar_records.uniq).to eq [Simulator::DEFAULT_BLOOD_SUGAR]
-      expect(subject.glycation).to eq({})
+      expect(subject.glycation).to eq(Array.new(Simulator::MAX_RECORD_NUMBER + 1, 0))
       expect(subject.blood_suguar_records.size).to eq(Simulator::MAX_RECORD_NUMBER + 1)
     end
   end
@@ -108,10 +108,26 @@ describe Simulator do
     end
   end
 
+  describe '#print_result' do
+    subject { simulator.print_result }
+    before { simulator.add_food '2:20' => food }
 
-  it 'should be able to draw' do
+    it 'should be able to print result' do
+      expect(subject[200]).to eq({ '3:20' => 103.89166666666661 })
+    end
   end
 
-  it 'should be able to calcualte glycation' do
+  describe 'glycation' do
+    before do
+      [1, 2 ,3].each do |id|
+        food = Food.find id
+        simulator.add_food '14:00' => food
+      end
+    end
+    subject { simulator.total_glycation }
+
+    it 'should be able to calcualte glycation' do
+      expect(subject).to be > 1
+    end
   end
 end

@@ -3,6 +3,7 @@ require 'active_support/all'
 class Simulator
   DEFAULT_BLOOD_SUGAR = 80
   MAX_RECORD_NUMBER = 24.hours / 60
+  GLYCATION_LIMIT = 150
 
   attr_reader :blood_suguar_records, :glycation, :foods, :exercises
 
@@ -13,9 +14,13 @@ class Simulator
   end
 
   def reset(start_at = 0, end_at = MAX_RECORD_NUMBER)
-    @blood_suguar_records = Array.new(MAX_RECORD_NUMBER + 1, DEFAULT_BLOOD_SUGAR) if start_at == 0 and end_at == MAX_RECORD_NUMBER
+    if start_at == 0 and end_at == MAX_RECORD_NUMBER
+      @blood_suguar_records = Array.new(MAX_RECORD_NUMBER + 1, DEFAULT_BLOOD_SUGAR)
+      @glycation = Array.new(MAX_RECORD_NUMBER + 1, 0)
+      return
+    end
     @blood_suguar_records[start_at..end_at] = Array.new(end_at - start_at + 1, DEFAULT_BLOOD_SUGAR)
-    @glycation = {}
+    @glycation[start_at..end_at] = Array.new(end_at - start_at + 1, 0)
   end
 
   def add_food(record)
@@ -63,11 +68,25 @@ class Simulator
           blood_suguar_records[number]
         end
       end
+
+      if blood_suguar_records[number] > GLYCATION_LIMIT
+        glycation[number] = 1
+      end
     end
   end
 
   def blood_suguar_at(time)
     blood_suguar_records[time_to_record_number(time)]
+  end
+
+  def total_glycation
+    glycation.select { |value| value > 0 }.size
+  end
+
+  def print_result
+    blood_suguar_records.map.with_index do |value, index|
+      { "#{index/60}:#{index%60}" => value }
+    end
   end
 
   private
