@@ -9,6 +9,10 @@ module ValueObjectMethods
     end
   end
 
+  def effective_rate
+    glycemic_index.to_f / self.class::DURATION
+  end
+
   class_methods do
     def load(file_path = self::DEFAULT_FILE_PATH)
       @all = []

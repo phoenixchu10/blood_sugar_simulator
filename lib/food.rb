@@ -4,6 +4,8 @@ require 'concerns/value_object_methods'
 class Food < Struct.new(:id, :name, :glycemic_index)
   include ValueObjectMethods
 
+  DURATION = 60 * 2
+
   DEFAULT_FILE_PATH = File.join File.expand_path(File.dirname(__FILE__)), '..', 'data', 'FoodDB.csv'
 
   def self.load(file_path = DEFAULT_FILE_PATH)
